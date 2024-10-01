@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <ctype.h>
 
 typedef enum {
     COPAS = 'C',
@@ -31,8 +32,7 @@ t_carta cartas[5];
 t_valor_m valor;
 } t_mao;
 
-short valorar_carta_letra(char v) {
-    // Converter as cartas com leta em valores
+int valorar_carta(char v) {
     if (v == 'J') {
         return 11;
     } else if (v == 'Q') {
@@ -40,32 +40,34 @@ short valorar_carta_letra(char v) {
     } else if (v == 'K') {
         return 13;
     } else if (v == 'A') {
-        return 14;  
+        return 14;
+    } else if (isdigit(v)) {
+        return v - '0'; 
+    } else {
+        return -1; 
     }
-    return -1; // Valor inválido
 }
 
-int compara_cartas(const void* a, const void* b) {
-    t_carta* carta1 = (t_carta*)a;
-    t_carta* carta2 = (t_carta*)b;
+void ordena_mao(t_mao *mao){
 
-    // Comparar valores primeiro
-    if (carta1->valor != carta2->valor) {
-        return carta1->valor - carta2->valor;
+    t_carta aux;
+
+    for(int j = 1; j < 5; j++){
+        for(int i = 0; i < 5 - j; i++){
+            if(mao->cartas[i].valor > mao->cartas[i+1].valor){
+                aux = mao->cartas[i];
+                mao->cartas[i+1] = mao->cartas[i];
+                mao->cartas[i] = aux;
+            }
+        }
     }
 
-    // Se os valores forem iguais, compara os naipes
-    return carta1->naipe - carta2->naipe;
 }
 
-void ordenar_mao(t_mao* mao) {
-    // Fazer no passo a passo algum sort depois algum sort
-    qsort(mao->cartas, 5, sizeof(t_carta), compara_cartas);
-}
 
-t_valor_m identificar_mao(t_mao* mao) {
+t_valor_m identificar_mao(t_mao *mao) {
     
-    ordenar_mao(mao);  // Ordena pra verificar
+    ordenar_mao(&mao);
     
     // Verificação para TRINCA
     if ((mao->cartas[0].valor == mao->cartas[1].valor && mao->cartas[1].valor == mao->cartas[2].valor) ||
@@ -88,27 +90,23 @@ int main() {
     for (int i = 0; i < k; i++) {
         t_mao mao1, mao2;
 
-        // Leitura das cartas da primeira capivara
         for (int j = 0; j < 5; j++) {
             char valor, naipe;
-            scanf(" %c %c", &valor, &naipe);
-            mao1.cartas[j].valor = valorar_carta_letra(valor);
+            scanf("%c %c", &valor, &naipe);
+            mao1.cartas[j].valor = valorar_carta(valor);
             mao1.cartas[j].naipe = (t_naipe)naipe;
         }
 
-        // Leitura das cartas da segunda capivara
         for (int j = 0; j < 5; j++) {
             char valor, naipe;
-            scanf(" %c %c", &valor, &naipe);
-            mao2.cartas[j].valor = valorar_carta_letra(valor);
+            scanf("%c %c", &valor, &naipe);
+            mao2.cartas[j].valor = valorar_carta(valor);
             mao2.cartas[j].naipe = (t_naipe)naipe;
         }
 
-        // Determinar os tipos de mão
         t_valor_m valor_mao1 = identificar_mao(&mao1);
         t_valor_m valor_mao2 = identificar_mao(&mao2);
 
-        // Verificar quem venceu
         if (valor_mao1 > valor_mao2) {
             ordenar_mao(&mao1);
             printf("1 ");
@@ -124,7 +122,7 @@ int main() {
             }
             printf("\n");
         } else {
-            printf("E\n");
+            printf("Empate\n");
         }
     }
 
