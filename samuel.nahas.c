@@ -1,7 +1,5 @@
 #include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <ctype.h>
+#include <stdbool.h>
 
 typedef enum {
     COPAS = 'C',
@@ -33,19 +31,18 @@ t_valor_m valor;
 } t_mao;
 
 int valorar_carta(char v) {
+
     if (v == 'J') {
         return 11;
-    } else if (v == 'Q') {
+    } if (v == 'Q') {
         return 12;
-    } else if (v == 'K') {
+    } if (v == 'K') {
         return 13;
-    } else if (v == 'A') {
+    } if (v == 'A') {
         return 14;
-    } else if (isdigit(v)) {
-        return v - '0'; 
-    } else {
-        return -1; 
     }
+    return v - '0';
+
 }
 
 void ordena_mao(t_mao *mao){
@@ -66,19 +63,47 @@ void ordena_mao(t_mao *mao){
 
 
 t_valor_m identificar_mao(t_mao *mao) {
-    
-    ordenar_mao(&mao);
-    
-    // Verificação para TRINCA
-    if ((mao->cartas[0].valor == mao->cartas[1].valor && mao->cartas[1].valor == mao->cartas[2].valor) ||
-        (mao->cartas[1].valor == mao->cartas[2].valor && mao->cartas[2].valor == mao->cartas[3].valor) ||
-        (mao->cartas[2].valor == mao->cartas[3].valor && mao->cartas[3].valor == mao->cartas[4].valor)) {
+
+    int contagem[15] = {0};
+
+    for (int i = 0; i < 5; i++) {
+        contagem[mao->cartas[i].valor]++;
+    }
+
+    bool tem_par = false;
+    bool tem_dois_pares = false;
+    bool tem_trinca = false;
+    bool tem_quadra = false;
+    int pares = 0;
+
+    for (int i = 2; i <= 14; i++) {
+        if (contagem[i] == 2) {
+            pares++;
+            tem_par = true;
+        } else if (contagem[i] == 3) {
+            tem_trinca = true;
+        } else if (contagem[i] == 4) {
+            tem_quadra = true;
+        }
+    }
+
+    if (tem_quadra) {
+        return QUADRA;
+    }
+
+    if (tem_trinca) {
         return TRINCA;
     }
+
+    if (pares == 2) {
+        return DOISPARES;
+    }
+
+    if (tem_par) {
+        return PAR;
+    }
     
-    // Adicionar verificação para outros tipos de mãos (Par, Full House, etc.)
-    
-    return PAR;  // Placeholder
+    return PAR;
 }
 
 
@@ -108,14 +133,14 @@ int main() {
         t_valor_m valor_mao2 = identificar_mao(&mao2);
 
         if (valor_mao1 > valor_mao2) {
-            ordenar_mao(&mao1);
+            ordena_mao(&mao1);
             printf("1 ");
             for (int j = 0; j < 5; j++) {
                 printf("%d %c ", mao1.cartas[j].valor, mao1.cartas[j].naipe);
             }
             printf("\n");
         } else if (valor_mao2 > valor_mao1) {
-            ordenar_mao(&mao2);
+            ordena_mao(&mao2);
             printf("2 ");
             for (int j = 0; j < 5; j++) {
                 printf("%d %c ", mao2.cartas[j].valor, mao2.cartas[j].naipe);
