@@ -70,10 +70,10 @@ t_valor_m identificar_mao(t_mao *mao) {
 
     for (int i = 0; i < 5; i++) {
         contagem[mao->cartas[i].valor]++;
-        if (i > 0 && mao->cartas[i].naipe != mao->cartas[0].naipe) {
+        if (mao->cartas[i].naipe != mao->cartas[i+1].naipe) {
             flush = false;
         }
-        if (i > 0 && mao->cartas[i].valor != mao->cartas[i - 1].valor + 1) {
+        if (mao->cartas[i].valor + 1 != mao->cartas[i+1].valor) {
             sequencia = false;
         }
     }
