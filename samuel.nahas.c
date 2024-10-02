@@ -2,111 +2,113 @@
 #include <stdbool.h>
 
 typedef enum {
-    COPAS = 'C',
-    ESPADAS = 'E',
+    PAUS = 'P',
     OUROS = 'O',
-    PAUS = 'P'
+    COPAS = 'C',
+    ESPADAS = 'E'
 } t_naipe;
 
 typedef struct {
-short valor;
-t_naipe naipe;
+    short valor;
+    t_naipe naipe;
 } t_carta;
 
 typedef enum {
-PAR = 15,
-DOISPARES = 16,
-TRINCA = 17,
-SEQUENCIA = 18,
-FLUSH = 19,
-FULL = 20,
-QUADRA = 21,
-SFLUSH = 22,
-RFLUSH = 23
+    PAR = 15,
+    DOISPARES = 16,
+    TRINCA = 17,
+    SEQUENCIA = 18,
+    FLUSH = 19,
+    FULL = 20,
+    QUADRA = 21,
+    SFLUSH = 22,
+    RFLUSH = 23
 } t_valor_m;
 
 typedef struct {
-t_carta cartas[5];
-t_valor_m valor;
+    t_carta cartas[5];
+    t_valor_m valor;
 } t_mao;
 
-int valorar_carta(char v) {
-
-    if (v == 'J') {
-        return 11;
-    } if (v == 'Q') {
-        return 12;
-    } if (v == 'K') {
-        return 13;
-    } if (v == 'A') {
-        return 14;
-    }
-    return v - '0';
-
+int valorar_carta(char *v) {
+    if (v[0] == '1' && v[1] == '0') return 10;
+    if (v[0] == 'J') return 11;
+    if (v[0] == 'Q') return 12;
+    if (v[0] == 'K') return 13;
+    if (v[0] == 'A') return 14;
+    return v[0] - '0';
 }
 
-void ordena_mao(t_mao *mao){
+int comparar_naipes(t_naipe n1, t_naipe n2) {
+    if (n1 == n2) return 0;
+    if (n1 == PAUS) return -1;
+    if (n1 == OUROS && n2 != PAUS) return -1;
+    if (n1 == COPAS && n2 == ESPADAS) return -1;
+    return 1;
+}
 
+void ordena_mao(t_mao *mao) {
     t_carta aux;
 
-    for(int j = 1; j < 5; j++){
-        for(int i = 0; i < 5 - j; i++){
-            if(mao->cartas[i].valor > mao->cartas[i+1].valor){
+    for (int j = 1; j < 5; j++) {
+        for (int i = 0; i < 5 - j; i++) {
+            if (mao->cartas[i].valor > mao->cartas[i + 1].valor ||
+                (mao->cartas[i].valor == mao->cartas[i + 1].valor &&
+                 comparar_naipes(mao->cartas[i].naipe, mao->cartas[i + 1].naipe) > 0)) {
                 aux = mao->cartas[i];
-                mao->cartas[i+1] = mao->cartas[i];
-                mao->cartas[i] = aux;
+                mao->cartas[i] = mao->cartas[i + 1];
+                mao->cartas[i + 1] = aux;
             }
         }
     }
-
 }
 
-
 t_valor_m identificar_mao(t_mao *mao) {
-
     int contagem[15] = {0};
+    bool flush = true;
+    bool sequencia = true;
 
     for (int i = 0; i < 5; i++) {
         contagem[mao->cartas[i].valor]++;
-    }
-
-    bool tem_par = false;
-    bool tem_dois_pares = false;
-    bool tem_trinca = false;
-    bool tem_quadra = false;
-    int pares = 0;
-
-    for (int i = 2; i <= 14; i++) {
-        if (contagem[i] == 2) {
-            pares++;
-            tem_par = true;
-        } else if (contagem[i] == 3) {
-            tem_trinca = true;
-        } else if (contagem[i] == 4) {
-            tem_quadra = true;
+        if (i > 0 && mao->cartas[i].naipe != mao->cartas[0].naipe) {
+            flush = false;
+        }
+        if (i > 0 && mao->cartas[i].valor != mao->cartas[i - 1].valor + 1) {
+            sequencia = false;
         }
     }
 
-    if (tem_quadra) {
-        return QUADRA;
+    bool tem_par = false, tem_trinca = false, tem_quadra = false;
+    int pares = 0;
+
+    for (int i = 2; i <= 14; i++) {
+        if (contagem[i] == 2) pares++, tem_par = true;
+        else if (contagem[i] == 3) tem_trinca = true;
+        else if (contagem[i] == 4) tem_quadra = true;
     }
 
-    if (tem_trinca) {
-        return TRINCA;
-    }
+    if (flush && sequencia) return SFLUSH;
+    if (tem_quadra) return QUADRA;
+    if (tem_trinca && tem_par) return FULL;
+    if (flush) return FLUSH;
+    if (sequencia) return SEQUENCIA;
+    if (tem_trinca) return TRINCA;
+    if (pares == 2) return DOISPARES;
+    if (tem_par) return PAR;
 
-    if (pares == 2) {
-        return DOISPARES;
-    }
-
-    if (tem_par) {
-        return PAR;
-    }
-    
-    return PAR;
+    return mao->cartas[4].valor;
 }
 
-
+void imprimir_mao(t_mao *mao) {
+    for (int i = 0; i < 5; i++) {
+        if (mao->cartas[i].valor == 11) printf("J %c ", mao->cartas[i].naipe);
+        else if (mao->cartas[i].valor == 12) printf("Q %c ", mao->cartas[i].naipe);
+        else if (mao->cartas[i].valor == 13) printf("K %c ", mao->cartas[i].naipe);
+        else if (mao->cartas[i].valor == 14) printf("A %c ", mao->cartas[i].naipe);
+        else printf("%d %c ", mao->cartas[i].valor, mao->cartas[i].naipe);
+    }
+    printf("\n");
+}
 
 int main() {
     int k;
@@ -116,15 +118,15 @@ int main() {
         t_mao mao1, mao2;
 
         for (int j = 0; j < 5; j++) {
-            char valor, naipe;
-            scanf("%c %c", &valor, &naipe);
+            char valor[3], naipe;
+            scanf("%s %c", valor, &naipe);
             mao1.cartas[j].valor = valorar_carta(valor);
             mao1.cartas[j].naipe = (t_naipe)naipe;
         }
 
         for (int j = 0; j < 5; j++) {
-            char valor, naipe;
-            scanf("%c %c", &valor, &naipe);
+            char valor[3], naipe;
+            scanf("%s %c", valor, &naipe);
             mao2.cartas[j].valor = valorar_carta(valor);
             mao2.cartas[j].naipe = (t_naipe)naipe;
         }
@@ -135,17 +137,11 @@ int main() {
         if (valor_mao1 > valor_mao2) {
             ordena_mao(&mao1);
             printf("1 ");
-            for (int j = 0; j < 5; j++) {
-                printf("%d %c ", mao1.cartas[j].valor, mao1.cartas[j].naipe);
-            }
-            printf("\n");
+            imprimir_mao(&mao1);
         } else if (valor_mao2 > valor_mao1) {
             ordena_mao(&mao2);
             printf("2 ");
-            for (int j = 0; j < 5; j++) {
-                printf("%d %c ", mao2.cartas[j].valor, mao2.cartas[j].naipe);
-            }
-            printf("\n");
+            imprimir_mao(&mao2);
         } else {
             printf("Empate\n");
         }
