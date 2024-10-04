@@ -68,7 +68,7 @@ t_valor_m identificar_mao(t_mao *mao) {
     bool flush = true;
     bool sequencia = true;
 
-    for (int i = 0; i < 5; i++) {
+    for (int i = 0; i < 4; i++) {
         contagem[mao->cartas[i].valor]++;
         if (mao->cartas[i].naipe != mao->cartas[i+1].naipe) {
             flush = false;
@@ -77,6 +77,7 @@ t_valor_m identificar_mao(t_mao *mao) {
             sequencia = false;
         }
     }
+
 
     bool tem_par = false, tem_trinca = false, tem_quadra = false;
     int pares = 0;
@@ -87,6 +88,7 @@ t_valor_m identificar_mao(t_mao *mao) {
         else if (contagem[i] == 4) tem_quadra = true;
     }
 
+    if (flush && sequencia && mao->cartas[0].valor == 10) return RFLUSH;
     if (flush && sequencia) return SFLUSH;
     if (tem_quadra) return QUADRA;
     if (tem_trinca && tem_par) return FULL;
@@ -131,15 +133,15 @@ int main() {
             mao2.cartas[j].naipe = (t_naipe)naipe;
         }
 
+        ordena_mao(&mao1);
+        ordena_mao(&mao2);
         t_valor_m valor_mao1 = identificar_mao(&mao1);
         t_valor_m valor_mao2 = identificar_mao(&mao2);
 
         if (valor_mao1 > valor_mao2) {
-            ordena_mao(&mao1);
             printf("1 ");
             imprimir_mao(&mao1);
         } else if (valor_mao2 > valor_mao1) {
-            ordena_mao(&mao2);
             printf("2 ");
             imprimir_mao(&mao2);
         } else {
