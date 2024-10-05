@@ -1,3 +1,11 @@
+/**************************************************
+*
+* Samuel Vieira da Cunha Nahas
+* Trabalho 1
+* Professor(a): Diego Padilha Rupert
+*
+*/ 
+
 #include <stdio.h>
 #include <stdbool.h>
 
@@ -30,6 +38,7 @@ typedef struct {
     t_valor_m valor;
 } t_mao;
 
+// ATRIBUI VALOR A TODAS AS CARTAS
 int valorar_carta(char *v) {
     if (v[0] == '1' && v[1] == '0') return 10;
     if (v[0] == 'J') return 11;
@@ -39,6 +48,7 @@ int valorar_carta(char *v) {
     return v[0] - '0';
 }
 
+// COMPARA SE UM NAIPE É MAIOR QUE OUTRO E SE SIM RETORNA 1
 int comparar_naipes(t_naipe n1, t_naipe n2) {
     if (n1 == n2) return 0;
     if (n1 == PAUS) return -1;
@@ -47,6 +57,7 @@ int comparar_naipes(t_naipe n1, t_naipe n2) {
     return 1;
 }
 
+// BUBLE SORT PRA ORDENAR A MÃO
 void ordena_mao(t_mao *mao) {
     t_carta aux;
 
@@ -63,13 +74,14 @@ void ordena_mao(t_mao *mao) {
     }
 }
 
+//RETORNA O VALOR DA MÃO COM BASE NAS REGRAS DO POKER
 t_valor_m identificar_mao(t_mao *mao) {
     int contagem[15] = {0};
     bool flush = true;
     bool sequencia = true;
 
+//VERIFICA SE TEM FLUSH OU SEQUENCIA
     for (int i = 0; i < 4; i++) {
-        contagem[mao->cartas[i].valor]++;
         if (mao->cartas[i].naipe != mao->cartas[i+1].naipe) {
             flush = false;
         }
@@ -78,15 +90,23 @@ t_valor_m identificar_mao(t_mao *mao) {
         }
     }
 
+//POPULA O VETOR COM BASE NO VALOR DA CARTA
+    for(int i = 0; i < 5; i++){
+        contagem[mao->cartas[i].valor]++;
+    }
+
 
     bool tem_par = false, tem_trinca = false, tem_quadra = false;
     int pares = 0;
 
+//VERIFICA COM BASE NO VETOR SE TEM PAR,TRINCA OU QUADRA
     for (int i = 2; i <= 14; i++) {
         if (contagem[i] == 2) pares++, tem_par = true;
         else if (contagem[i] == 3) tem_trinca = true;
         else if (contagem[i] == 4) tem_quadra = true;
     }
+
+//RETORNA O VALOR DA MAO 
 
     if (flush && sequencia && mao->cartas[0].valor == 10) return RFLUSH;
     if (flush && sequencia) return SFLUSH;
@@ -101,6 +121,7 @@ t_valor_m identificar_mao(t_mao *mao) {
     return mao->cartas[4].valor;
 }
 
+// FUNÇÃO PRA IMPRIMIR A MÃO
 void imprimir_mao(t_mao *mao) {
     for (int i = 0; i < 5; i++) {
         if (mao->cartas[i].valor == 11) printf("J %c ", mao->cartas[i].naipe);
